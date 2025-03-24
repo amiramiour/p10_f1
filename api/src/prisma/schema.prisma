@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,4 +5,141 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model League {
+  id          Int           @id @default(autoincrement())
+  name        String
+  private     Boolean
+  shared_link String?
+  active      Boolean
+  id_avatar   Int?
+
+  avatar      Avatar?       @relation(fields: [id_avatar], references: [id])
+  userLeagues UserLeague[]
+}
+
+model User {
+  id         String         @id
+  email      String         @unique
+  firstname  String
+  lastname   String
+  password   String
+  role       String
+  id_avatar  Int?
+
+  avatar     Avatar?        @relation(fields: [id_avatar], references: [id])
+  userLeagues UserLeague[]
+  betSelectionResults BetSelectionResult[] @relation("userBets")
+}
+
+model Avatar {
+  id              Int     @id @default(autoincrement())
+  picture_avatar  String
+
+  users   User[]
+  leagues League[]
+}
+
+model UserLeague {
+  id        Int    @id @default(autoincrement())
+  id_league Int
+  id_user   String
+  role      String
+
+  league    League @relation(fields: [id_league], references: [id])
+  user      User   @relation(fields: [id_user], references: [id])
+}
+
+model GP {
+  id_api_races   Int     @id @default(autoincrement())
+  season         String
+  date           DateTime
+  time           DateTime
+  id_api_tracks  Int
+
+  track          Track   @relation(fields: [id_api_tracks], references: [id_api_tracks])
+  gpPilotes      GPP[]
+  classement     GPClassement[]
+  bets           BetSelectionResult[]
+}
+
+model Track {
+  id_api_tracks   Int     @id @default(autoincrement())
+  country_name    String
+  track_name      String
+  picture_country String
+  picture_track   String
+
+  gps             GP[]
+}
+
+model Pilote {
+  id_api_pilotes  Int     @id @default(autoincrement())
+  name            String
+  picture         String
+  name_acronym    String
+
+  gpPilotes       GPP[]
+  pilotsEcuries   PiloteEcurie[]
+  bets_p10        BetSelectionResult[] @relation("p10")
+  bets_dnf        BetSelectionResult[] @relation("dnf")
+}
+
+model Ecurie {
+  id_api_ecuries  Int     @id @default(autoincrement())
+  name            String
+  logo            String
+  color           String
+
+  gpPilotes       GPP[]
+  pilotsEcuries   PiloteEcurie[]
+}
+
+model GPP {
+  id         Int     @id @default(autoincrement())
+  id_gp      Int
+  id_pilote  Int
+  id_ecurie  Int
+
+  gp         GP      @relation(fields: [id_gp], references: [id_api_races])
+  pilote     Pilote  @relation(fields: [id_pilote], references: [id_api_pilotes])
+  ecurie     Ecurie  @relation(fields: [id_ecurie], references: [id_api_ecuries])
+  classement GPClassement[]
+}
+
+model PiloteEcurie {
+  id         Int      @id @default(autoincrement())
+  id_pilote  Int
+  id_ecurie  Int
+  year       DateTime
+
+  pilote     Pilote @relation(fields: [id_pilote], references: [id_api_pilotes])
+  ecurie     Ecurie @relation(fields: [id_ecurie], references: [id_api_ecuries])
+}
+
+model GPClassement {
+  id            Int     @id @default(autoincrement())
+  id_gp         Int
+  id_gp_pilote  Int
+  isDNF         Boolean
+  position      Int
+
+  gp            GP   @relation(fields: [id_gp], references: [id_api_races])
+  gp_pilote     GPP  @relation(fields: [id_gp_pilote], references: [id])
+}
+
+model BetSelectionResult {
+  id              Int     @id @default(autoincrement())
+  id_utilisateur  String
+  id_gp           Int
+  points_p10      String
+  points_dnf      String
+  id_pilote_p10   Int
+  id_pilote_dnf   Int
+
+  user            User    @relation("userBets", fields: [id_utilisateur], references: [id])
+  gp              GP      @relation(fields: [id_gp], references: [id_api_races])
+  pilote_p10      Pilote  @relation("p10", fields: [id_pilote_p10], references: [id_api_pilotes])
+  pilote_dnf      Pilote  @relation("dnf", fields: [id_pilote_dnf], references: [id_api_pilotes])
 }
