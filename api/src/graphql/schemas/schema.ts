@@ -9,6 +9,14 @@ export const typeDefs = gql`
     role: String
     id_avatar: Int
   }
+  type League {
+  id: Int
+  name: String
+  private: Boolean
+  shared_link: String
+  active: Boolean
+  id_avatar: Int
+ }
 
   type AuthPayload {
     token: String
@@ -18,6 +26,8 @@ export const typeDefs = gql`
   type Query {
     hello: String
     getMe: User
+    getMyLeagues: [League]
+
   }
 
   type Mutation {
@@ -32,5 +42,10 @@ export const typeDefs = gql`
       email: String!
       password: String!
     ): AuthPayload
+
+    createLeague(
+      name: String!
+      private: Boolean!
+    ): League
   }
 `;
