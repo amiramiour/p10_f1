@@ -17,6 +17,13 @@ export const typeDefs = gql`
   active: Boolean
   id_avatar: Int
  }
+ type LeagueMember {
+  id: String
+  email: String
+  firstname: String
+  lastname: String
+  role: String
+}
 
   type AuthPayload {
     token: String
@@ -27,6 +34,7 @@ export const typeDefs = gql`
     hello: String
     getMe: User
     getMyLeagues: [League]
+    getLeagueUsers(leagueId: Int!): [LeagueMember]
 
   }
 
@@ -47,6 +55,7 @@ export const typeDefs = gql`
       name: String!
       private: Boolean!
     ): League
+
     joinLeague(
     shared_link: String!
     ): League
