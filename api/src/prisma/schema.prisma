@@ -11,7 +11,7 @@ model League {
   id          Int           @id @default(autoincrement())
   name        String
   private     Boolean
-  shared_link String?
+  shared_link  String?  @unique
   active      Boolean
   id_avatar   Int?
 

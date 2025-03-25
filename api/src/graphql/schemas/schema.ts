@@ -47,5 +47,8 @@ export const typeDefs = gql`
       name: String!
       private: Boolean!
     ): League
+    joinLeague(
+    shared_link: String!
+    ): League
   }
 `;

@@ -1,11 +1,14 @@
 import { PrismaClient } from '@prisma/client';
 import { GQLContext } from '../../context';
 import { CreateLeagueArgs } from './types';
+import { JoinLeagueArgs } from './types';
+
 import crypto from 'crypto';
 
 const prisma = new PrismaClient();
 
-export const leagueMutations = {
+export const leagueMutations = 
+{
   createLeague: async (_: any, args: CreateLeagueArgs, context: GQLContext) => {
     if (!context.userId) {
       throw new Error("Unauthorized");
@@ -35,4 +38,42 @@ export const leagueMutations = {
 
     return league;
   },
+  joinLeague: async (_: any, args: JoinLeagueArgs, context: GQLContext) => {
+    if (!context.userId) throw new Error('Unauthorized');
+  
+    const { shared_link } = args;
+  
+    // Vérifie que la ligue existe
+    const league = await prisma.league.findFirst({
+        where: { shared_link },
+      });
+      
+  
+    if (!league) {
+      throw new Error('Invalid link: league not found');
+    }
+  
+    // Vérifie si l'utilisateur est déjà dedans
+    const alreadyJoined = await prisma.userLeague.findFirst({
+      where: {
+        id_user: context.userId,
+        id_league: league.id,
+      },
+    });
+  
+    if (alreadyJoined) {
+      throw new Error('You already joined this league');
+    }
+  
+    // Ajoute dans UserLeague
+    await prisma.userLeague.create({
+      data: {
+        id_league: league.id,
+        id_user: context.userId,
+        role: 'user',
+      },
+    });
+  
+    return league;
+  }
 };
