@@ -1,6 +1,15 @@
+import { userQueries } from './user/query';
+import { userMutations } from './user/mutation';
+import { leagueMutations } from './league/mutation';
+import { leagueQueries } from './league/query';
+
 export const resolvers = {
-    Query: {
-      hello: () => 'Hello from Apollo Server 🚀',
-    },
-  };
-  
+  Query: {
+    ...userQueries,
+    ...leagueQueries,
+  },
+  Mutation: {
+    ...userMutations,
+    ...leagueMutations,
+  },
+};
