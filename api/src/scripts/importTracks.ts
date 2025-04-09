@@ -40,9 +40,9 @@ async function importTracks() {
       count++;
     }
 
-    console.log(`✅ ${count} circuits importés avec succès`);
+    console.log(` ${count} circuits importés avec succès`);
   } catch (err) {
-    console.error('❌ Erreur lors de l’import des circuits :', err);
+    console.error(' Erreur lors de l’import des circuits :', err);
   } finally {
     await prisma.$disconnect();
   }
