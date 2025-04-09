@@ -36,13 +36,13 @@ async function importUpcomingGPs() {
           },
         });
         count++;
-        console.log(`✅ GP à venir ajouté : ${date}`);
+        console.log(` GP à venir ajouté : ${date}`);
       }
     }
 
-    console.log(`\n📅 Import terminé : ${count} nouveaux GP à venir ajoutés.`);
+    console.log(`\n Import terminé : ${count} nouveaux GP à venir ajoutés.`);
   } catch (err) {
-    console.error('❌ Erreur lors de l’import des GP à venir :', err);
+    console.error(' Erreur lors de l’import des GP à venir :', err);
   } finally {
     await prisma.$disconnect();
   }
