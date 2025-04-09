@@ -24,7 +24,7 @@ async function importPilotesAndEcuries() {
       } = pilote;
 
       if (!full_name || !team_name || !driver_number) {
-        console.warn(`⛔ Incomplet : ${JSON.stringify(pilote)}`);
+        console.warn(` Incomplet : ${JSON.stringify(pilote)}`);
         continue;
       }
 
@@ -63,7 +63,7 @@ async function importPilotesAndEcuries() {
       });
 
       if (existingLink) {
-        console.log(`ℹ️ Lien déjà existant : ${full_name} -> ${team_name}`);
+        console.log(`ℹ Lien déjà existant : ${full_name} -> ${team_name}`);
         continue;
       }
 
@@ -75,15 +75,15 @@ async function importPilotesAndEcuries() {
         },
       });
 
-      console.log(`🔗 Lien créé : ${full_name} -> ${team_name}`);
+      console.log(` Lien créé : ${full_name} -> ${team_name}`);
       countLinks++;
     }
 
-    console.log(`✅ ${addedPilotes.size} pilotes importés`);
-    console.log(`✅ ${addedEcuries.size} écuries importées`);
-    console.log(`🔗 ${countLinks} liens pilote/écurie ajoutés pour ${year}`);
+    console.log(` ${addedPilotes.size} pilotes importés`);
+    console.log(` ${addedEcuries.size} écuries importées`);
+    console.log(` ${countLinks} liens pilote/écurie ajoutés pour ${year}`);
   } catch (error) {
-    console.error('❌ Erreur import pilotes + écuries :', error);
+    console.error(' Erreur import pilotes + écuries :', error);
   } finally {
     await prisma.$disconnect();
   }
