@@ -2,43 +2,54 @@ import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 
 const prisma = new PrismaClient();
+const API_URL = 'https://f1-api.demo.mds-paris.yt/api/date';
+const BEARER_TOKEN = '2025';
 
-const API_KEY = process.env.F1_API_KEY as string;
-
-async function importGPs() {
+async function importGPsFromProf() {
   try {
-    const response = await axios.get('https://v1.formula-1.api-sports.io/races', {
-      params: {
-        season: 2023,
-        type: 'Race',
-      },
+    await prisma.gP.deleteMany();
+    console.log(' Table GP vidée');
+
+    const { data: dates }: { data: { date: string }[] } = await axios.get(API_URL, {
       headers: {
-        'x-apisports-key': API_KEY,
+        Authorization: `Bearer ${BEARER_TOKEN}`,
       },
     });
 
-    const races = response.data.response;
+    let addedCount = 0;
 
-    for (const race of races) {
-      await prisma.gP.upsert({
-        where: { id_api_races: race.id },
-        update: {},
-        create: {
-          id_api_races: race.id,
-          season: String(race.season),
-          date: new Date(race.date),
-          time: race.time ? new Date(`${race.date}T${race.time}`) : new Date(race.date),
-          id_api_tracks: race.circuit.id,
-        },
+    for (const entry of dates) {
+      const dateStr = entry.date;
+      const dateObj = new Date(dateStr);
+
+      // ID = timestamp pour éviter conflits
+      const id_api_races = BigInt(dateObj.getTime());
+
+      const existing = await prisma.gP.findUnique({
+        where: { id_api_races },
       });
+
+      if (!existing) {
+        await prisma.gP.create({
+          data: {
+            id_api_races,
+            season: '2025',
+            date: dateObj,
+            time: dateObj,
+            id_api_tracks: 1, // temporaire, en attendant meilleur mapping
+          },
+        });
+        console.log(` GP ajouté pour ${dateStr}`);
+        addedCount++;
+      }
     }
 
-    console.log(` ${races.length} GP imported with success`);
-  } catch (error) {
-    console.error(' Failed to import GPs:', error);
+    console.log(`\n Import terminé : ${addedCount} GP ajoutés`);
+  } catch (err) {
+    console.error(' Erreur lors de l’import des GP depuis l’API du prof :', err);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-importGPs();
+importGPsFromProf();
