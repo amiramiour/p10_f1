@@ -67,6 +67,16 @@ type Track {
   picture_country: String
   picture_track: String
 }
+type BetSelectionResult {
+  id: Int!
+  points_p10: String
+  points_dnf: String
+  gp: GP!
+  pilote_p10: Pilote!
+  pilote_dnf: Pilote!
+}
+
+
 
 
   type Query {
@@ -76,8 +86,11 @@ type Track {
     getLeagueUsers(leagueId: Int!): [LeagueMember]
     getClassementByGP(gpId: String!): [ClassementResult!]!
     getNextGP: GP
+    getMyBets: [BetSelectionResult!]!   
 
   }
+  
+
 
   type Mutation {
     createUser(
@@ -92,5 +105,12 @@ type Track {
     createLeague(name: String!, private: Boolean!): League
 
     joinLeague(shared_link: String!): League
+    
+    createBetSelection(
+  gpId: String!
+  piloteP10Id: Int!
+  piloteDNFId: Int!
+  ): BetSelectionResult
+
   }
 `;
