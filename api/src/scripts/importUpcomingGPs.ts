@@ -2,7 +2,7 @@ import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
-const API_URL = 'https://f1-api.demo.mds-paris.yt/api/date';
+const API_URL = 'https://f1-api.demo.mds-paris.yt/api/gp/dates';
 const BEARER_TOKEN = '2025';
 
 async function importUpcomingGPs() {
