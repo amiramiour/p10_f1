@@ -52,7 +52,7 @@ model UserLeague {
 }
 
 model GP {
-  id_api_races   Int     @id @default(autoincrement())
+  id_api_races   BigInt  @id
   season         String
   date           DateTime
   time           DateTime
@@ -79,6 +79,7 @@ model Pilote {
   name            String
   picture         String
   name_acronym    String
+driver_number Int? @unique
 
   gpPilotes       GPP[]
   pilotsEcuries   PiloteEcurie[]
@@ -86,9 +87,10 @@ model Pilote {
   bets_dnf        BetSelectionResult[] @relation("dnf")
 }
 
+
 model Ecurie {
   id_api_ecuries  Int     @id @default(autoincrement())
-  name            String
+  name            String  @unique
   logo            String
   color           String
 
@@ -96,9 +98,10 @@ model Ecurie {
   pilotsEcuries   PiloteEcurie[]
 }
 
+
 model GPP {
   id         Int     @id @default(autoincrement())
-  id_gp      Int
+  id_gp      BigInt
   id_pilote  Int
   id_ecurie  Int
 
@@ -120,7 +123,7 @@ model PiloteEcurie {
 
 model GPClassement {
   id            Int     @id @default(autoincrement())
-  id_gp         Int
+  id_gp      BigInt
   id_gp_pilote  Int
   isDNF         Boolean
   position      Int
@@ -132,7 +135,7 @@ model GPClassement {
 model BetSelectionResult {
   id              Int     @id @default(autoincrement())
   id_utilisateur  String
-  id_gp           Int
+  id_gp      BigInt
   points_p10      String
   points_dnf      String
   id_pilote_p10   Int

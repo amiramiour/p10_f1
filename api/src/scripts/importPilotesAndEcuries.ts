@@ -2,84 +2,88 @@ import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 
 const prisma = new PrismaClient();
+const API_URL = 'https://api.openf1.org/v1/drivers?session_key=latest';
+const year = 2025;
 
 async function importPilotesAndEcuries() {
   try {
-    const { data: drivers } = await axios.get('https://api.openf1.org/v1/drivers');
+    const response = await axios.get(API_URL);
+    const pilotesData = response.data;
 
-    const ecurieMap = new Map<string, number>(); // team_name => id
-    const currentYear = new Date().getFullYear();
+    const addedPilotes = new Set();
+    const addedEcuries = new Set();
+    let countLinks = 0;
 
-    for (const driver of drivers) {
+    for (const pilote of pilotesData) {
       const {
-        driver_number,
         full_name,
         headshot_url,
         name_acronym,
         team_name,
-        team_colour,
-      } = driver;
+        driver_number,
+      } = pilote;
 
-      if (!driver_number || !full_name || !team_name) continue;
-
-      const piloteId = parseInt(driver_number);
-
-      //  Étape 1 : upsert l’écurie
-      let ecurie = await prisma.ecurie.findFirst({
-        where: { name: team_name },
-      });
-
-      if (!ecurie) {
-        ecurie = await prisma.ecurie.create({
-          data: {
-            name: team_name,
-            logo: '', // à remplir plus tard manuellement
-            color: team_colour || '',
-          },
-        });
+      if (!full_name || !team_name || !driver_number) {
+        console.warn(` Incomplet : ${JSON.stringify(pilote)}`);
+        continue;
       }
 
-      ecurieMap.set(team_name, ecurie.id_api_ecuries);
-
-      //  Étape 2 : upsert le pilote (si pas déjà existant)
-      let pilote = await prisma.pilote.findUnique({
-        where: { id_api_pilotes: piloteId },
-      });
-
-      if (!pilote) {
-        pilote = await prisma.pilote.create({
-          data: {
-            id_api_pilotes: piloteId,
-            name: full_name,
-            picture: headshot_url || '',
-            name_acronym: name_acronym || '',
-          },
-        });
-      }
-
-      //  Étape 3 : créer la relation PiloteEcurie
-      const existingRelation = await prisma.piloteEcurie.findFirst({
-        where: {
-          id_pilote: pilote.id_api_pilotes,
-          id_ecurie: ecurie.id_api_ecuries,
-          year: new Date(`${currentYear}-01-01`),
+      const piloteInDb = await prisma.pilote.upsert({
+        where: { driver_number: parseInt(driver_number) },
+        update: {},
+        create: {
+          driver_number: parseInt(driver_number),
+          name: full_name,
+          picture: headshot_url ?? '',
+          name_acronym,
         },
       });
 
-      if (!existingRelation) {
-        await prisma.piloteEcurie.create({
-          data: {
-            id_pilote: pilote.id_api_pilotes,
-            id_ecurie: ecurie.id_api_ecuries,
-            year: new Date(`${currentYear}-01-01`),
-          },
-        });
+      addedPilotes.add(piloteInDb.driver_number);
+
+      const ecurieInDb = await prisma.ecurie.upsert({
+        where: { name: team_name },
+        update: {},
+        create: {
+          name: team_name,
+          logo: '',
+          color: '#CCCCCC',
+        },
+      });
+
+      addedEcuries.add(ecurieInDb.name);
+
+      // Lien Pilote <-> Ecurie
+      const existingLink = await prisma.piloteEcurie.findFirst({
+        where: {
+          id_pilote: piloteInDb.id_api_pilotes,
+          id_ecurie: ecurieInDb.id_api_ecuries,
+          year: new Date(`${year}-01-01`),
+        },
+      });
+
+      if (existingLink) {
+        console.log(`ℹ Lien déjà existant : ${full_name} -> ${team_name}`);
+        continue;
       }
+
+      await prisma.piloteEcurie.create({
+        data: {
+          id_pilote: piloteInDb.id_api_pilotes,
+          id_ecurie: ecurieInDb.id_api_ecuries,
+          year: new Date(`${year}-01-01`),
+        },
+      });
+
+      console.log(` Lien créé : ${full_name} -> ${team_name}`);
+      countLinks++;
     }
 
-    console.log(' Import pilotes + écuries terminé avec succès');
-  } catch (err) {
-    console.error(' Erreur pendant l’import:', err);
+    console.log(` ${addedPilotes.size} pilotes importés`);
+    console.log(` ${addedEcuries.size} écuries importées`);
+    console.log(` ${countLinks} liens pilote/écurie ajoutés pour ${year}`);
+  } catch (error) {
+    console.error(' Erreur import pilotes + écuries :', error);
   } finally {
     await prisma.$disconnect();
   }

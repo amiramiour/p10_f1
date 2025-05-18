@@ -2,50 +2,47 @@ import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 
 const prisma = new PrismaClient();
-const API_KEY = process.env.F1_API_KEY as string;
+
+const API_KEY = process.env.F1_API_KEY; // clé de l'API Sports
+const API_URL = 'https://v1.formula-1.api-sports.io/races?season=2023&type=Race';
 
 async function importTracks() {
   try {
-    const { data } = await axios.get('https://v1.formula-1.api-sports.io/races', {
-      params: {
-        season: 2023,
-        type: 'Race',
-      },
+    const response = await axios.get(API_URL, {
       headers: {
-        'x-apisports-key': API_KEY,
+        'x-rapidapi-host': 'v1.formula-1.api-sports.io',
+        'x-rapidapi-key': API_KEY || '',
       },
     });
 
-    const races = data.response;
-
-    const uniqueTracks = new Map();
+    const races = response.data.response;
+    const added = new Set<number>();
+    let count = 0;
 
     for (const race of races) {
-      const circuit = race.circuit;
+      const track = race.competition;
 
-      // Pour éviter les doublons
-      if (!uniqueTracks.has(circuit.id)) {
-        uniqueTracks.set(circuit.id, circuit);
-      }
-    }
+      if (!track || added.has(track.id)) continue;
 
-    for (const [id, track] of uniqueTracks) {
       await prisma.track.upsert({
-        where: { id_api_tracks: id },
+        where: { id_api_tracks: track.id },
         update: {},
         create: {
-          id_api_tracks: id,
+          id_api_tracks: track.id,
           country_name: track.location?.country || 'Unknown',
           track_name: track.name,
-          picture_country: '', //  À compléter manuellement plus tard
-          picture_track: '',   //  Idem
+          picture_country: '', // à remplir à la main
+          picture_track: '',   // idem
         },
       });
+
+      added.add(track.id);
+      count++;
     }
 
-    console.log(` ${uniqueTracks.size} tracks imported with success`);
+    console.log(` ${count} circuits importés avec succès`);
   } catch (err) {
-    console.error(' Error importing tracks:', err);
+    console.error(' Erreur lors de l’import des circuits :', err);
   } finally {
     await prisma.$disconnect();
   }
