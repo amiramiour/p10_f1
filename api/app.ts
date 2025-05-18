@@ -6,7 +6,7 @@ import { createContext } from './src/graphql/context'; //  Ajoute ça
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: createContext, //  Activer le middleware 
+  context: createContext, 
 });
 
 server.listen().then(({ url }) => {
