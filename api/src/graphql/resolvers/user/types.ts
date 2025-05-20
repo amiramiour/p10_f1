@@ -9,4 +9,13 @@ export interface CreateUserArgs {
     email: string;
     password: string;
   }
-  
+ export interface UpdateUserArgs {
+  firstname?: string;
+  lastname?: string;
+  password?: string;
+}
+
+export interface DeleteUserArgs {
+  id: string;
+}
+ 
