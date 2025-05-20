@@ -138,6 +138,8 @@ export const typeDefs = gql`
     league(id: ID!): League
     track(id: ID!): Track
     pilote(id: ID!): Pilote
+    ecurie(id: ID!): Ecurie
+
 
 
 
