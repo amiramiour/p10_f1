@@ -128,6 +128,7 @@ export const typeDefs = gql`
     classementLigue(leagueId: ID!): [ClassementLigueEntry!]!
     getMyBets: [BetSelectionResult!]!
     getBetsByGP(gpId: ID!): [BetSelectionResult!]!
+    betsByUser(userId: ID!): [BetSelectionResult!]!
     gps(season: String): [GP!]!
     gp(id: ID!): GP
     pilotes: [Pilote!]!
