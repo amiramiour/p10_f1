@@ -1,13 +1,16 @@
-import { PrismaClient } from '@prisma/client';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
+import { PrismaClient } from '@prisma/client'; // ← maintenant c'est bon
 import axios from 'axios';
 
 const prisma = new PrismaClient();
 
-async function importPilotes() {
+export async function importPilotes() {
   try {
     const { data: drivers } = await axios.get('https://api.openf1.org/v1/drivers');
 
-    // Pour éviter les doublons par pilote
     const uniquePilots = new Map();
 
     for (const pilot of drivers) {
@@ -32,12 +35,14 @@ async function importPilotes() {
       });
     }
 
-    console.log(` ${uniquePilots.size} pilotes imported with success`);
+    console.log(`${uniquePilots.size} pilotes imported with success`);
   } catch (error) {
-    console.error(' Error importing pilotes:', error);
+    console.error('Error importing pilotes:', error);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-importPilotes();
+if (require.main === module) {
+  importPilotes();
+}
