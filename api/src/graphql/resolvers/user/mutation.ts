@@ -2,7 +2,10 @@ import { PrismaClient } from '@prisma/client';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { GQLContext } from '../../context';
+
 import { CreateUserArgs, LoginUserArgs } from './types';
+import { UpdateUserArgs, DeleteUserArgs } from './types';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -48,5 +51,33 @@ export const userMutations = {
     );
 
     return { token, user };
+  },
+
+  updateUser: async (_: any, args: UpdateUserArgs, context: GQLContext) => {
+  if (!context.userId) throw new Error('Unauthorized');
+
+  const dataToUpdate: any = {};
+  if (args.firstname) dataToUpdate.firstname = args.firstname;
+  if (args.lastname) dataToUpdate.lastname = args.lastname;
+  if (args.password) {
+    dataToUpdate.password = await argon2.hash(args.password);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: context.userId },
+    data: dataToUpdate,
+  });
+
+  return updatedUser;
+  },
+
+  deleteUser: async (_: any, __: any, context: GQLContext) => {
+    if (!context.userId) throw new Error('Unauthorized');
+
+    await prisma.user.delete({
+      where: { id: context.userId },
+    });
+
+    return true;
   },
 };

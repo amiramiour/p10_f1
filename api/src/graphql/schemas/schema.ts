@@ -173,5 +173,7 @@ export const typeDefs = gql`
     ): BetSelectionResult!
 
     deleteBetSelection(betId: Int!): Boolean!
+    updateUser(firstname: String, lastname: String, password: String): User!
+    deleteUser: Boolean!
   }
 `;
