@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function generateGPP() {
+export  async function generateGPP() {
   try {
     const gps = await prisma.gP.findMany();
     const piloteEcuries = await prisma.piloteEcurie.findMany({
@@ -44,5 +44,7 @@ async function generateGPP() {
     await prisma.$disconnect();
   }
 }
+if (require.main === module) {
+  generateGPP();
+}
 
-generateGPP();
