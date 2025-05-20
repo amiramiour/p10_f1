@@ -9,6 +9,7 @@ import { betMutations } from './bet/mutation';
 import { leagueResolvers } from './league/resolver'; 
 import { trackQueries } from './track/query';
 import { piloteQueries } from './pilote/query';
+import { ecurieQueries } from './ecurie/query';
 
 export const resolvers = {
   Query: {
@@ -19,6 +20,8 @@ export const resolvers = {
     ...betQueries,
     ...trackQueries,
     ...piloteQueries,
+    ...ecurieQueries,
+
 
 
   },

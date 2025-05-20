@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { AuthenticationError } from 'apollo-server';
+import { GQLContext } from '../../context';
 
 const prisma = new PrismaClient();
 
@@ -40,5 +41,26 @@ export const betQueries = {
         gp: true,
       },
     });
+  },
+  async betsByUser(_: any, args: { userId: string }, context: GQLContext) {
+    if (!context.userId) throw new AuthenticationError('Unauthorized');
+
+    return (await prisma.betSelectionResult.findMany({
+      where: { id_utilisateur: args.userId },
+      include: {
+        gp: { include: { track: true } },
+        pilote_p10: true,
+        pilote_dnf: true,
+        user: true,
+      },
+    })).map(bet => ({
+      ...bet,
+      gp: {
+        ...bet.gp,
+        id_api_races: bet.gp.id_api_races.toString(),
+        date: bet.gp.date.toISOString(),
+        time: bet.gp.time.toISOString(),
+      },
+    }));
   },
 };
