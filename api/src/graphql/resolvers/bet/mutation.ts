@@ -19,6 +19,17 @@ export const betMutations = {
 
     if (existing) throw new Error("Vous avez déjà parié sur ce GP");
 
+    const gp = await prisma.gP.findUnique({
+      where: { id_api_races: BigInt(gpId) },
+    });
+
+    if (!gp) throw new Error("GP introuvable");
+
+    const now = new Date();
+    if (now >= gp.date) {
+      throw new Error("Ce GP a déjà commencé, vous ne pouvez plus parier.");
+    }
+
     const bet = await prisma.betSelectionResult.create({
       data: {
         id_utilisateur: userId,
@@ -32,4 +43,69 @@ export const betMutations = {
 
     return bet;
   },
+  async updateBetSelection(_: any, args: any, context: any) {
+  const userId = context.userId;
+  if (!userId) throw new AuthenticationError('Not authenticated');
+
+  const { betId, piloteP10Id, piloteDNFId } = args;
+
+  const bet = await prisma.betSelectionResult.findUnique({
+    where: { id: betId },
+    include: { gp: true },
+  });
+
+  if (!bet) {
+    throw new Error("Pari introuvable.");
+  }
+
+  if (bet.id_utilisateur !== userId) {
+    throw new AuthenticationError("Accès interdit à ce pari.");
+  }
+
+  const now = new Date();
+  if (now >= bet.gp.date) {
+    throw new Error("Le GP a déjà commencé. Modification impossible.");
+  }
+
+  const updatedBet = await prisma.betSelectionResult.update({
+    where: { id: betId },
+    data: {
+      ...(piloteP10Id && { id_pilote_p10: piloteP10Id }),
+      ...(piloteDNFId && { id_pilote_dnf: piloteDNFId }),
+    },
+  });
+
+  return updatedBet;
+ },
+ async deleteBetSelection(_: any, args: { betId: number }, context: any) {
+  const userId = context.userId;
+  if (!userId) throw new AuthenticationError('Not authenticated');
+
+  const bet = await prisma.betSelectionResult.findUnique({
+    where: { id: args.betId },
+    include: { gp: true },
+  });
+
+  if (!bet) {
+    throw new Error("Pari introuvable.");
+  }
+
+  if (bet.id_utilisateur !== userId) {
+    throw new AuthenticationError("Accès interdit à ce pari.");
+  }
+
+  const now = new Date();
+  if (now >= bet.gp.date) {
+    throw new Error("Le GP a déjà commencé. Suppression impossible.");
+  }
+
+  await prisma.betSelectionResult.delete({
+    where: { id: args.betId },
+  });
+
+  return true;
+ },
+ 
+
+
 };

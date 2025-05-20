@@ -4,9 +4,9 @@ import axios from 'axios';
 const prisma = new PrismaClient();
 
 const API_KEY = process.env.F1_API_KEY; // clé de l'API Sports
-const API_URL = 'https://v1.formula-1.api-sports.io/races?season=2023&type=Race';
+const API_URL = 'https://v1.formula-1.api-sports.io/races?season=2024&type=Race';
 
-async function importTracks() {
+export async function importTracks() {
   try {
     const response = await axios.get(API_URL, {
       headers: {
@@ -48,4 +48,6 @@ async function importTracks() {
   }
 }
 
-importTracks();
+if (require.main === module) {
+  importTracks();
+}

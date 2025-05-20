@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 const API_URL = 'https://api.openf1.org/v1/drivers?session_key=latest';
 const year = 2025;
 
-async function importPilotesAndEcuries() {
+export async function importPilotesAndEcuries() {
   try {
     const response = await axios.get(API_URL);
     const pilotesData = response.data;
@@ -28,18 +28,21 @@ async function importPilotesAndEcuries() {
         continue;
       }
 
+      const id = parseInt(driver_number);
+
       const piloteInDb = await prisma.pilote.upsert({
-        where: { driver_number: parseInt(driver_number) },
+        where: { id_api_pilotes: id },
         update: {},
         create: {
-          driver_number: parseInt(driver_number),
+          id_api_pilotes: id,
+          driver_number: id,
           name: full_name,
           picture: headshot_url ?? '',
-          name_acronym,
+          name_acronym: name_acronym ?? '',
         },
       });
 
-      addedPilotes.add(piloteInDb.driver_number);
+      addedPilotes.add(piloteInDb.id_api_pilotes);
 
       const ecurieInDb = await prisma.ecurie.upsert({
         where: { name: team_name },
@@ -53,7 +56,7 @@ async function importPilotesAndEcuries() {
 
       addedEcuries.add(ecurieInDb.name);
 
-      // Lien Pilote <-> Ecurie
+      // Vérifier si le lien existe déjà
       const existingLink = await prisma.piloteEcurie.findFirst({
         where: {
           id_pilote: piloteInDb.id_api_pilotes,
@@ -63,7 +66,7 @@ async function importPilotesAndEcuries() {
       });
 
       if (existingLink) {
-        console.log(`ℹ Lien déjà existant : ${full_name} -> ${team_name}`);
+        console.log(`Lien déjà existant : ${full_name} -> ${team_name}`);
         continue;
       }
 
@@ -75,18 +78,20 @@ async function importPilotesAndEcuries() {
         },
       });
 
-      console.log(` Lien créé : ${full_name} -> ${team_name}`);
+      console.log(`Lien créé : ${full_name} -> ${team_name}`);
       countLinks++;
     }
 
-    console.log(` ${addedPilotes.size} pilotes importés`);
-    console.log(` ${addedEcuries.size} écuries importées`);
-    console.log(` ${countLinks} liens pilote/écurie ajoutés pour ${year}`);
+    console.log(`${addedPilotes.size} pilotes importés`);
+    console.log(`${addedEcuries.size} écuries importées`);
+    console.log(`${countLinks} liens pilote/écurie ajoutés pour ${year}`);
   } catch (error) {
-    console.error(' Erreur import pilotes + écuries :', error);
+    console.error('Erreur import pilotes + écuries :', error);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-importPilotesAndEcuries();
+if (require.main === module) {
+  importPilotesAndEcuries();
+}

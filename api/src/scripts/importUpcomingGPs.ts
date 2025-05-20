@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 const API_URL = 'https://f1-api.demo.mds-paris.yt/api/gp/dates';
 const BEARER_TOKEN = '2025';
 
-async function importUpcomingGPs() {
+export async function importUpcomingGPs() {
   try {
     const response = await axios.get(API_URL, {
       headers: {
@@ -48,4 +48,6 @@ async function importUpcomingGPs() {
   }
 }
 
-importUpcomingGPs();
+if (require.main === module) {
+  importUpcomingGPs();
+}
