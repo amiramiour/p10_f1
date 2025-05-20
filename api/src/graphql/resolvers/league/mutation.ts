@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { GQLContext } from '../../context';
 import { CreateLeagueArgs } from './types';
 import { JoinLeagueArgs } from './types';
+import { assertIsAdmin } from '../../guards/isAdmin';
 
 import crypto from 'crypto';
 
@@ -75,5 +76,25 @@ export const leagueMutations =
     });
   
     return league;
-  }
+  },
+  deleteLeague: async (_: any, args: { leagueId: number }, context: GQLContext) => {
+  if (!context.userId) throw new Error("Unauthorized");
+
+  const { leagueId } = args;
+
+  // Vérifie si l'utilisateur est bien admin de la ligue
+  await assertIsAdmin(context.userId, leagueId);
+
+  // Supprimer les UserLeague liés à la ligue
+  await prisma.userLeague.deleteMany({
+    where: { id_league: leagueId },
+  });
+
+  // Supprimer la ligue
+  await prisma.league.delete({
+    where: { id: leagueId },
+  });
+
+  return true;
+}
 };
