@@ -3,11 +3,11 @@ import axios from 'axios';
 
 const prisma = new PrismaClient();
 
-const API_URL = 'https://f1-api.demo.mds-paris.yt/api/last';
+const API_URL = 'https://f1-api.demo.mds-paris.yt/api/gp/latest';
 const BEARER_TOKEN = '2025';
 
-async function importClassements() {
-  console.log('📡 Récupération des résultats depuis l’API du prof...');
+export async function importClassements() {
+  console.log('Récupération des résultats depuis l’API du prof...');
 
   try {
     const response = await axios.get(API_URL, {
@@ -45,8 +45,11 @@ async function importClassements() {
     }
 
     let insertCount = 0;
+
     for (const result of results) {
-      const pilote = await prisma.pilote.findUnique({ where: { driver_number: parseInt(result.number) } });
+      const pilote = await prisma.pilote.findUnique({
+        where: { driver_number: parseInt(result.number) },
+      });
 
       if (!pilote) {
         console.log(` Pilote introuvable pour numéro ${result.number}`);
@@ -65,11 +68,30 @@ async function importClassements() {
         continue;
       }
 
+      const position = parseInt(result.position);
+      if (isNaN(position)) {
+        console.log(` Position invalide pour ${pilote.name}, skip.`);
+        continue;
+      }
+
+      // Vérifier si le classement existe déjà
+      const existingClassement = await prisma.gPClassement.findFirst({
+        where: {
+          id_gp: existingGP.id_api_races,
+          id_gp_pilote: gpp.id,
+        },
+      });
+
+      if (existingClassement) {
+        console.log(` Classement déjà présent pour ${pilote.name}, skip.`);
+        continue;
+      }
+
       await prisma.gPClassement.create({
         data: {
           id_gp: existingGP.id_api_races,
           id_gp_pilote: gpp.id,
-          position: parseInt(result.position),
+          position,
           isDNF: false,
         },
       });
@@ -77,7 +99,11 @@ async function importClassements() {
       insertCount++;
     }
 
-    console.log(` ${insertCount} résultats GP insérés pour le GP du ${scrapedAt.toISOString().split('T')[0]}`);
+    console.log(
+      ` ${insertCount} résultats GP insérés pour le GP du ${scrapedAt
+        .toISOString()
+        .split('T')[0]}`
+    );
   } catch (error: any) {
     console.error(' Erreur lors de l’import des classements :', error.message);
   } finally {
@@ -85,4 +111,6 @@ async function importClassements() {
   }
 }
 
-importClassements();
+if (require.main === module) {
+  importClassements();
+}
