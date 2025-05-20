@@ -37,5 +37,25 @@ export const leagueQueries = {
       lastname: ul.user.lastname,
       role: ul.role,
     }));
+  },
+  league: async (_: any, args: { id: string }, context: GQLContext) => {
+    if (!context.userId) throw new Error('Unauthorized');
+
+    const league = await prisma.league.findUnique({
+    where: { id: parseInt(args.id) },
+    include: {
+      avatar: true,
+      userLeagues: {
+        include: {
+          user: true
+        }
+      }
+    }
+  });
+
+
+    if (!league) throw new Error('League not found');
+
+    return league;
   }
 };
