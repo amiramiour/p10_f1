@@ -6,8 +6,8 @@ const prisma = new PrismaClient();
 const API_URL = 'https://f1-api.demo.mds-paris.yt/api/gp/latest';
 const BEARER_TOKEN = '2025';
 
-export async function importClassements() {
-  console.log('Récupération des résultats depuis l’API du prof...');
+export async function importClassement() {
+  console.log(' Récupération des résultats depuis l’API du prof...');
 
   try {
     const response = await axios.get(API_URL, {
@@ -17,42 +17,52 @@ export async function importClassements() {
     });
 
     const results = response.data;
+
     if (!Array.isArray(results) || results.length === 0) {
       console.log(' Aucun résultat à importer.');
       return;
     }
 
+    // Décalage : scraped_at = date du GP +1 jour
     const scrapedAt = new Date(results[0].scraped_at);
+    const gpDate = new Date(scrapedAt);
+    gpDate.setDate(gpDate.getDate() - 1);
+    gpDate.setHours(0, 0, 0, 0);
 
-    const dayStart = new Date(scrapedAt);
-    dayStart.setHours(0, 0, 0, 0);
-
-    const dayEnd = new Date(scrapedAt);
-    dayEnd.setHours(23, 59, 59, 999);
+    const nextDay = new Date(gpDate);
+    nextDay.setDate(nextDay.getDate() + 1);
 
     const existingGP = await prisma.gP.findFirst({
       where: {
         date: {
-          gte: dayStart,
-          lte: dayEnd,
+          gte: gpDate,
+          lt: nextDay,
         },
       },
     });
 
     if (!existingGP) {
-      console.log(' Aucun GP trouvé à cette date :', scrapedAt.toISOString());
+      console.log(' Aucun GP trouvé pour la date correspondante :', gpDate.toISOString().split('T')[0]);
       return;
     }
 
     let insertCount = 0;
 
     for (const result of results) {
+      const driverNumber = parseInt(result.number);
+      const position = parseInt(result.position);
+
+      if (isNaN(driverNumber) || isNaN(position)) {
+        console.warn(` Infos invalides pour un pilote : numéro=${result.number}, position=${result.position}`);
+        continue;
+      }
+
       const pilote = await prisma.pilote.findUnique({
-        where: { driver_number: parseInt(result.number) },
+        where: { driver_number: driverNumber },
       });
 
       if (!pilote) {
-        console.log(` Pilote introuvable pour numéro ${result.number}`);
+        console.warn(` Pilote introuvable pour numéro ${result.number}`);
         continue;
       }
 
@@ -64,25 +74,18 @@ export async function importClassements() {
       });
 
       if (!gpp) {
-        console.log(` GPP introuvable pour pilote ${pilote.name}, skip.`);
+        console.warn(` GPP introuvable pour ${pilote.name}, skip.`);
         continue;
       }
 
-      const position = parseInt(result.position);
-      if (isNaN(position)) {
-        console.log(` Position invalide pour ${pilote.name}, skip.`);
-        continue;
-      }
-
-      // Vérifier si le classement existe déjà
-      const existingClassement = await prisma.gPClassement.findFirst({
+      const alreadyExists = await prisma.gPClassement.findFirst({
         where: {
           id_gp: existingGP.id_api_races,
           id_gp_pilote: gpp.id,
         },
       });
 
-      if (existingClassement) {
+      if (alreadyExists) {
         console.log(` Classement déjà présent pour ${pilote.name}, skip.`);
         continue;
       }
@@ -99,18 +102,14 @@ export async function importClassements() {
       insertCount++;
     }
 
-    console.log(
-      ` ${insertCount} résultats GP insérés pour le GP du ${scrapedAt
-        .toISOString()
-        .split('T')[0]}`
-    );
+    console.log(` ${insertCount} résultats insérés pour le GP du ${existingGP.date.toISOString().split('T')[0]}`);
   } catch (error: any) {
-    console.error(' Erreur lors de l’import des classements :', error.message);
+    console.error(' Erreur lors de l’import :', error.message);
   } finally {
     await prisma.$disconnect();
   }
 }
 
 if (require.main === module) {
-  importClassements();
+  importClassement();
 }
