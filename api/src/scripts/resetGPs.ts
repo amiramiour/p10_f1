@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function resetGPs() {
-  console.log('🧹 Suppression des données liées aux GP...');
+  console.log(' Suppression des données liées aux GP...');
 
   await prisma.gPClassement.deleteMany();
   console.log(' GPClassement supprimés');
@@ -20,7 +20,7 @@ async function resetGPs() {
   console.log(' Circuits (Track) supprimés');
 
   await prisma.$disconnect();
-  console.log('🎉 Réinitialisation complète terminée');
+  console.log(' Réinitialisation complète terminée');
 }
 
 resetGPs();

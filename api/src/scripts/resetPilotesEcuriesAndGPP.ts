@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function resetPilotesEcuriesAndGPP() {
   try {
-    console.log('🧹 Suppression des données liées aux pilotes, écuries et GPP...');
+    console.log(' Suppression des données liées aux pilotes, écuries et GPP...');
 
     await prisma.gPP.deleteMany();
     console.log(' GPP supprimés');
