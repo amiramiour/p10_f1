@@ -56,7 +56,7 @@ model GP {
   season         String
   date           DateTime
   time           DateTime
-  id_api_tracks  Int
+  id_api_tracks  BigInt 
 
   track          Track   @relation(fields: [id_api_tracks], references: [id_api_tracks])
   gpPilotes      GPP[]
@@ -65,7 +65,7 @@ model GP {
 }
 
 model Track {
-  id_api_tracks   Int     @id @default(autoincrement())
+  id_api_tracks BigInt @id
   country_name    String
   track_name      String
   picture_country String
