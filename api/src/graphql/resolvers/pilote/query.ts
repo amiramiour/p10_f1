@@ -25,7 +25,7 @@ export const piloteQueries = {
     ...pilote,
     ecuries: pilote.pilotsEcuries.map((pe) => ({
         ...pe,
-        year: pe.year.getFullYear().toString(), // transforme Date → "2024"
+        year: pe.year.getFullYear().toString(), 
     })),
     };
 

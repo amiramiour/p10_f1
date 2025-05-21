@@ -3,8 +3,8 @@ import axios from 'axios';
 
 const prisma = new PrismaClient();
 
-const API_KEY = process.env.F1_API_KEY; // clé de l'API Sports
-const API_URL = 'https://v1.formula-1.api-sports.io/races?season=2024&type=Race';
+const API_KEY = process.env.F1_API_KEY; 
+const API_URL = 'https://v1.formula-1.api-sports.io/circuits';
 
 export async function importTracks() {
   try {
@@ -15,28 +15,31 @@ export async function importTracks() {
       },
     });
 
-    const races = response.data.response;
+    const circuits = response.data.response;
+
     const added = new Set<number>();
     let count = 0;
 
-    for (const race of races) {
-      const track = race.competition;
+    for (const circuit of circuits) {
+      const id = circuit.id;
+      const name = circuit.name;
+      const country = circuit.location?.country || 'Unknown';
 
-      if (!track || added.has(track.id)) continue;
+      if (added.has(id)) continue;
 
       await prisma.track.upsert({
-        where: { id_api_tracks: track.id },
+        where: { id_api_tracks: id },
         update: {},
         create: {
-          id_api_tracks: track.id,
-          country_name: track.location?.country || 'Unknown',
-          track_name: track.name,
-          picture_country: '', // à remplir à la main
-          picture_track: '',   // idem
+          id_api_tracks: id,
+          track_name: name,
+          country_name: country,
+          picture_country: '', // à compléter à la main
+          picture_track: '',   // à compléter à la main
         },
       });
 
-      added.add(track.id);
+      added.add(id);
       count++;
     }
 

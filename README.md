@@ -41,6 +41,17 @@ Créer un fichier .env dans le dossier racine :
 ### 3. Lancer en local (via Docker)
 docker-compose up --build
 
+### 4. Prisma
+
+# a. Installer les dépendances
+npm install
+
+# b. Générer le client Prisma
+npx prisma generate --schema=src/prisma/schema.prisma
+
+# c. Synchroniser le schéma avec la DB
+npx dotenv -e .env -- prisma db push --schema=src/prisma/schema.prisma
+
 ##  Import de données (scripts)
 
 # Charger circuits
@@ -50,7 +61,7 @@ npx ts-node --require ./src/scripts/load-env.ts ./src/scripts/importTracks.ts
 npx ts-node --require ./src/scripts/load-env.ts ./src/scripts/importPilotesAndEcuries.ts
 
 # Charger GPs à venir
-npx ts-node --require ./src/scripts/load-env.ts ./src/scripts/importUpcomingGPs.ts
+npx ts-node --require ./src/scripts/load-env.ts ./src/scripts/importUpcomingGPsFromJolpi.ts
 
 # Générer GPP (relation GP-pilote)
 npx ts-node --require ./src/scripts/load-env.ts ./src/scripts/generateGPP.ts
