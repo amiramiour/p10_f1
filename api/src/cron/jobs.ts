@@ -3,9 +3,9 @@ import cron from 'node-cron';
 import { importPilotes } from '../scripts/importPilotes';
 import { importEcuries } from '../scripts/importEcuries';
 import { importPilotesAndEcuries } from '../scripts/importPilotesAndEcuries';
-import { importTracks } from '../scripts/importTracks';
-import { importUpcomingGPs } from '../scripts/importUpcomingGPs';
-import { importClassements } from '../scripts/importClassement';
+import { importTracks } from '../scripts/importTracks.old';
+import { importUpcomingGPs } from '../scripts/importUpcomingGPs.old';
+import { importClassement } from '../scripts/importClassement';
 import { calculatePoints } from '../scripts/calculatePoints';
 import { generateGPP } from '../scripts/generateGPP';
 
@@ -19,7 +19,7 @@ cron.schedule('0 18 * * 0', async () => {
   await importTracks();
   await importUpcomingGPs();
   await generateGPP();
-  await importClassements();
+  await importClassement();
   await calculatePoints();
 
   console.log('Tous les imports ont été exécutés');
