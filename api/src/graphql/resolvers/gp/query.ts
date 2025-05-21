@@ -6,7 +6,7 @@ export const gpQueries = {
   getNextGP: async () => {
     const now = new Date();
 
-    return await prisma.gP.findFirst({
+    const gp = await prisma.gP.findFirst({
       where: {
         date: {
           gt: now,
@@ -19,5 +19,13 @@ export const gpQueries = {
         track: true,
       },
     });
+    if (!gp) return null;
+
+    return {
+      ...gp,
+      id_api_races: gp.id_api_races.toString(),
+      date: new Date(gp.date).toISOString().split('T')[0], 
+
+    };
   },
 };
