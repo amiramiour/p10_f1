@@ -55,7 +55,7 @@ npx dotenv -e .env -- prisma db push --schema=src/prisma/schema.prisma
 ##  Import de données (scripts)
 
 # Charger circuits
-npx ts-node --require ./src/scripts/load-env.ts ./src/scripts/importTracks.ts
+npx ts-node --require ./src/scripts/load-env.ts ./src/scripts/importTracksFromJolpi.ts
 
 # Charger pilotes et écuries
 npx ts-node --require ./src/scripts/load-env.ts ./src/scripts/importPilotesAndEcuries.ts
