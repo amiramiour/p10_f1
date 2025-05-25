@@ -136,14 +136,11 @@ export const typeDefs = gql`
     users: [User!]!
     user(id: ID!): User
     getNextGP: GP
+    getUpcomingGPs: [GP!]!
     league(id: ID!): League
     track(id: ID!): Track
     pilote(id: ID!): Pilote
     ecurie(id: ID!): Ecurie
-
-
-
-
   }
 
   type Mutation {
