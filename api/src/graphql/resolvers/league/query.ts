@@ -58,30 +58,7 @@ export const leagueQueries = {
 
     return league;
   },
-  getUpcomingGPs: async () => {
-  const now = new Date();
-
-  const gps = await prisma.gP.findMany({
-    where: {
-      date: {
-        gt: now,
-      },
-    },
-    orderBy: {
-      date: 'asc',
-    },
-    include: {
-      track: true,
-    },
-  });
-
-  return gps.map((gp) => ({
-    ...gp,
-    id_api_races: gp.id_api_races.toString(),
-    date: gp.date.getTime().toString(), // ← pour éviter le même bug avec date
-    time: gp.time?.toISOString() || '', // ← si jamais
-  }));
-}
+  
 
 
 
