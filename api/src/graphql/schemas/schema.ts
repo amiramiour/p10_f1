@@ -156,7 +156,8 @@ export const typeDefs = gql`
     loginUser(email: String!, password: String!): AuthPayload
 
     createLeague(name: String!, private: Boolean!): League
-    joinLeague(shared_link: String!): League
+
+    joinLeague(leagueId: Int, shared_link: String): League
     deleteLeague(leagueId: Int!): Boolean!
 
     createBetSelection(
