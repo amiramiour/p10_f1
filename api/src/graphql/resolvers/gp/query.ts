@@ -19,13 +19,17 @@ export const gpQueries = {
         track: true,
       },
     });
+
     if (!gp) return null;
 
     return {
       ...gp,
-      id_api_races: gp.id_api_races.toString(),
-      date: new Date(gp.date).toISOString().split('T')[0], 
-
+      id_api_races: gp.id_api_races.toString(), // conversion ID
+      date: new Date(gp.date).toISOString().split('T')[0],
+      track: {
+        ...gp.track,
+        id_api_tracks: gp.track.id_api_tracks.toString(), // aussi ici
+      },
     };
   },
 };

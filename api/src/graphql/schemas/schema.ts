@@ -47,7 +47,7 @@ export const typeDefs = gql`
   }
 
   type GP {
-    id_api_races: String!
+    id_api_races: ID!
     season: String!
     date: String!
     time: String!
