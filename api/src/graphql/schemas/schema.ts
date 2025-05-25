@@ -138,6 +138,8 @@ export const typeDefs = gql`
     getNextGP: GP
     getUpcomingGPs: [GP!]!
     league(id: ID!): League
+      getPublicLeagues: [League!]!
+
     track(id: ID!): Track
     pilote(id: ID!): Pilote
     ecurie(id: ID!): Ecurie
