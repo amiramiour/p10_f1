@@ -58,6 +58,18 @@ export const leagueQueries = {
 
     return league;
   },
+  getPublicLeagues: async () => {
+  return await prisma.league.findMany({
+    where: {
+      private: false,
+      active: true, // ← optionnel, si tu veux filtrer les ligues actives seulement
+    },
+    include: {
+      avatar: true,
+    },
+  });
+  },
+
   
 
 
