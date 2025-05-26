@@ -157,7 +157,7 @@ export const typeDefs = gql`
 
     createLeague(name: String!, private: Boolean!): League
 
-    joinLeague(leagueId: Int, shared_link: String): League
+    joinLeague(leagueId: Int, shared_link: String): League!
     deleteLeague(leagueId: Int!): Boolean!
 
     createBetSelection(
