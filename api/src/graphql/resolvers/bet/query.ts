@@ -30,18 +30,29 @@ export const betQueries = {
    
   },
   async getBetsByGP(_: any, args: { gpId: string }) {
-    return prisma.betSelectionResult.findMany({
-      where: {
-        id_gp: BigInt(args.gpId),
-      },
-      include: {
-        user: true,
-        pilote_p10: true,
-        pilote_dnf: true,
-        gp: true,
-      },
-    });
-  },
+  const rawBets = await prisma.betSelectionResult.findMany({
+    where: {
+      id_gp: BigInt(args.gpId),
+    },
+    include: {
+      user: true,
+      pilote_p10: true,
+      pilote_dnf: true,
+      gp: { include: { track: true } }, // ajoute si tu veux le détail du circuit
+    },
+  });
+
+  return rawBets.map(bet => ({
+    ...bet,
+    gp: {
+      ...bet.gp,
+      id_api_races: bet.gp.id_api_races.toString(),
+      date: bet.gp.date.toISOString(),
+      time: bet.gp.time.toISOString(),
+    },
+  }));
+},
+
   async betsByUser(_: any, args: { userId: string }, context: GQLContext) {
     if (!context.userId) throw new AuthenticationError('Unauthorized');
 

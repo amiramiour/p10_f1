@@ -24,7 +24,8 @@ export const gpQueries = {
     return {
       ...gp,
       id_api_races: gp.id_api_races.toString(),
-      date: new Date(gp.date).toISOString().split('T')[0],
+      date: gp.date.toISOString().split('T')[0],
+      time: gp.time?.toISOString() || '',
       track: {
         ...gp.track,
         id_api_tracks: gp.track.id_api_tracks.toString(),
@@ -110,5 +111,29 @@ export const gpQueries = {
         id_api_tracks: gp.track.id_api_tracks.toString(),
       },
     }));
+  },
+
+  gp: async (_: any, args: { id: string }) => {
+    const gp = await prisma.gP.findUnique({
+      where: {
+        id_api_races: BigInt(args.id),
+      },
+      include: {
+        track: true,
+      },
+    });
+
+    if (!gp) throw new Error('GP not found');
+
+    return {
+      ...gp,
+      id_api_races: gp.id_api_races.toString(),
+      date: gp.date.toISOString(),
+      time: gp.time.toISOString(),
+      track: {
+        ...gp.track,
+        id_api_tracks: gp.track.id_api_tracks.toString(),
+      },
+    };
   },
 };
