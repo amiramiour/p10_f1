@@ -1,4 +1,3 @@
-// src/graphql/resolvers/gp/query.ts
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
@@ -24,38 +23,96 @@ export const gpQueries = {
 
     return {
       ...gp,
-      id_api_races: gp.id_api_races.toString(), // conversion ID
-      date: new Date(gp.date).toISOString().split('T')[0],
+      id_api_races: gp.id_api_races.toString(),
+      date: gp.date.toISOString().split('T')[0],
+      time: gp.time?.toISOString() || '',
       track: {
         ...gp.track,
-        id_api_tracks: gp.track.id_api_tracks.toString(), // aussi ici
+        id_api_tracks: gp.track.id_api_tracks.toString(),
       },
     };
   },
+
   getUpcomingGPs: async () => {
-  const now = new Date();
+    const now = new Date();
 
-  const gps = await prisma.gP.findMany({
-    where: {
-      date: {
-        gt: now,
+    const gps = await prisma.gP.findMany({
+      where: {
+        date: {
+          gt: now,
+        },
       },
-    },
-    orderBy: {
-      date: 'asc',
-    },
-    include: {
-      track: true,
-    },
-  });
+      orderBy: {
+        date: 'asc',
+      },
+      include: {
+        track: true,
+      },
+    });
 
-  return gps.map((gp) => ({
-    ...gp,
-    id_api_races: gp.id_api_races.toString(),
-    date: gp.date.getTime().toString(), // ← pour éviter le même bug avec date
-    time: gp.time?.toISOString() || '', // ← si jamais
-  }));
-},
+    return gps.map((gp) => ({
+      ...gp,
+      id_api_races: gp.id_api_races.toString(),
+      date: gp.date.toISOString().split('T')[0],
+      time: gp.time?.toISOString() || '',
+      track: {
+        ...gp.track,
+        id_api_tracks: gp.track.id_api_tracks.toString(),
+      },
+    }));
+  },
+
+  getPastGPs: async () => {
+    const now = new Date();
+
+    const gps = await prisma.gP.findMany({
+      where: {
+        date: {
+          lt: now,
+        },
+      },
+      orderBy: {
+        date: 'desc',
+      },
+      include: {
+        track: true,
+      },
+    });
+
+    return gps.map((gp) => ({
+      ...gp,
+      id_api_races: gp.id_api_races.toString(),
+      date: gp.date.toISOString().split('T')[0],
+      time: gp.time?.toISOString() || '',
+      track: {
+        ...gp.track,
+        id_api_tracks: gp.track.id_api_tracks.toString(),
+      },
+    }));
+  },
+
+  getAllGPs: async () => {
+    const gps = await prisma.gP.findMany({
+      orderBy: {
+        date: 'asc',
+      },
+      include: {
+        track: true,
+      },
+    });
+
+    return gps.map((gp) => ({
+      ...gp,
+      id_api_races: gp.id_api_races.toString(),
+      date: gp.date.toISOString().split('T')[0],
+      time: gp.time?.toISOString() || '',
+      track: {
+        ...gp.track,
+        id_api_tracks: gp.track.id_api_tracks.toString(),
+      },
+    }));
+  },
+
   gp: async (_: any, args: { id: string }) => {
     const gp = await prisma.gP.findUnique({
       where: {
@@ -66,7 +123,7 @@ export const gpQueries = {
       },
     });
 
-    if (!gp) throw new Error("GP not found");
+    if (!gp) throw new Error('GP not found');
 
     return {
       ...gp,
@@ -78,6 +135,5 @@ export const gpQueries = {
         id_api_tracks: gp.track.id_api_tracks.toString(),
       },
     };
-  }
-
+  },
 };
