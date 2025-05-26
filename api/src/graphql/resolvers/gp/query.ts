@@ -55,5 +55,29 @@ export const gpQueries = {
     date: gp.date.getTime().toString(), // ← pour éviter le même bug avec date
     time: gp.time?.toISOString() || '', // ← si jamais
   }));
-}
+},
+  gp: async (_: any, args: { id: string }) => {
+    const gp = await prisma.gP.findUnique({
+      where: {
+        id_api_races: BigInt(args.id),
+      },
+      include: {
+        track: true,
+      },
+    });
+
+    if (!gp) throw new Error("GP not found");
+
+    return {
+      ...gp,
+      id_api_races: gp.id_api_races.toString(),
+      date: gp.date.toISOString(),
+      time: gp.time.toISOString(),
+      track: {
+        ...gp.track,
+        id_api_tracks: gp.track.id_api_tracks.toString(),
+      },
+    };
+  }
+
 };

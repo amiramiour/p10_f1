@@ -143,6 +143,7 @@ export const typeDefs = gql`
     track(id: ID!): Track
     pilote(id: ID!): Pilote
     ecurie(id: ID!): Ecurie
+
   }
 
   type Mutation {

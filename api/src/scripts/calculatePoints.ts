@@ -10,7 +10,7 @@ const POINTS_PAR_POSITION: Record<number, number> = {
 };
 
 export async function calculatePoints() {
-  console.log(' Calcul des points pour les paris...');
+  console.log('🔄 Calcul des points pour les paris...');
 
   const bets = await prisma.betSelectionResult.findMany({
     include: {
@@ -25,11 +25,13 @@ export async function calculatePoints() {
   for (const bet of bets) {
     const gpDate = bet.gp.date;
     const now = new Date();
-    if (gpDate > now) continue; // Skip futurs GP
+    if (gpDate > now) continue; 
 
     const classement = await prisma.gPClassement.findMany({
       where: { id_gp: bet.id_gp },
-      include: { gp_pilote: true },
+      include: {
+        gp_pilote: true,
+      },
     });
 
     let p10Points = '0';
@@ -47,7 +49,7 @@ export async function calculatePoints() {
       (c) => c.gp_pilote.id_pilote === bet.id_pilote_dnf && c.isDNF
     );
     if (dnfEntry) {
-      dnfPoints = '10';
+      dnfPoints = '10'; 
     }
 
     await prisma.betSelectionResult.update({
@@ -61,7 +63,7 @@ export async function calculatePoints() {
     updated++;
   }
 
-  console.log(` ${updated} paris mis à jour.`);
+  console.log(`${updated} paris mis à jour.`);
   await prisma.$disconnect();
 }
 

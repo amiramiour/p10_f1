@@ -21,14 +21,20 @@ export const piloteQueries = {
     });
 
     if (!pilote) throw new Error("Pilote not found");
+
     return {
-    ...pilote,
-    ecuries: pilote.pilotsEcuries.map((pe) => ({
+      ...pilote,
+      ecuries: pilote.pilotsEcuries.map((pe) => ({
         ...pe,
-        year: pe.year.getFullYear().toString(), 
-    })),
+        year: pe.year.getFullYear().toString(),
+      })),
     };
+  },
 
+  pilotes: async (_: any, __: any, context: GQLContext) => {
+    if (!context.userId) throw new Error("Unauthorized");
 
+    const pilotes = await prisma.pilote.findMany();
+    return pilotes;
   },
 };
