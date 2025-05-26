@@ -30,13 +30,7 @@ export const leagueQueries = {
     });
 
     // Formatte le résultat
-    return userLeagues.map((ul) => ({
-      id: ul.user.id,
-      email: ul.user.email,
-      firstname: ul.user.firstname,
-      lastname: ul.user.lastname,
-      role: ul.role,
-    }));
+    return userLeagues;
   },
   league: async (_: any, args: { id: string }, context: GQLContext) => {
     if (!context.userId) throw new Error('Unauthorized');
