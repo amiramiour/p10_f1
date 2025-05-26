@@ -57,7 +57,7 @@ export const typeDefs = gql`
   }
 
   type Track {
-    id_api_tracks: Int!
+    id_api_tracks: String!
     country_name: String!
     track_name: String!
     picture_country: String
@@ -137,6 +137,8 @@ export const typeDefs = gql`
     user(id: ID!): User
     getNextGP: GP
     getUpcomingGPs: [GP!]!
+    getPastGPs: [GP!]!
+    getAllGPs: [GP!]!
     league(id: ID!): League
       getPublicLeagues: [League!]!
 
