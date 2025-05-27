@@ -14,3 +14,15 @@ services:
     env_file:
       - .env
     command: ["npx", "ts-node", "app.ts"]
+    networks:
+      - routing
+      - default
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.f1-api.rule=Host(`blue-api.devprod.fr`)'
+      - 'traefik.http.routers.f1-api.entrypoints=websecure'
+      - 'traefik.http.routers.f1-api.tls.certresolver=myresolver'
+networks:
+   routing:
+      external: true
+      default:
