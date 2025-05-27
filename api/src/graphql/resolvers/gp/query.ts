@@ -136,4 +136,20 @@ export const gpQueries = {
       },
     };
   },
+  getPilotesByGP: async (_: any, args: { gpId: string }) => {
+  const pilotes = await prisma.gPP.findMany({
+    where: {
+      id_gp: BigInt(args.gpId),
+    },
+    include: {
+      pilote: true,
+    },
+  });
+
+  return pilotes.map((gpP) => ({
+    ...gpP.pilote,
+    id_api_pilotes: gpP.pilote.id_api_pilotes,
+  }));
+},
+
 };
