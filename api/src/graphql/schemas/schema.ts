@@ -140,12 +140,11 @@ export const typeDefs = gql`
     getPastGPs: [GP!]!
     getAllGPs: [GP!]!
     league(id: ID!): League
-      getPublicLeagues: [League!]!
-
+    getPublicLeagues: [League!]!
     track(id: ID!): Track
     pilote(id: ID!): Pilote
     ecurie(id: ID!): Ecurie
-
+    getPilotesByGP(gpId: String!): [Pilote!]!
   }
 
   type Mutation {
