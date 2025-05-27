@@ -22,7 +22,7 @@ services:
       - 'traefik.http.routers.f1-api.rule=Host(`blue-api.devprod.fr`)'
       - 'traefik.http.routers.f1-api.entrypoints=websecure'
       - 'traefik.http.routers.f1-api.tls.certresolver=myresolver'
+
 networks:
-   routing:
-      external: true
-      default:
+  routing:
+    external: true
